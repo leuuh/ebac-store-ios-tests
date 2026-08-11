@@ -1,0 +1,27 @@
+# Dependências
+node_modules/
+
+# Appium / build
+.appium/
+*.log
+allure-results/
+errorShots/
+screenshots/
+
+# Apps baixados (arquivos grandes — baixar conforme README)
+app/*.app
+app/*.ipa
+app/*.zip
+
+# System
+.DS_Store
+Thumbs.db
+
+# Env / credenciais (Sauce Labs, etc.)
+.env
+.env.local
+
+# IDE
+.idea/
+.vscode/*
+!.vscode/extensions.json
