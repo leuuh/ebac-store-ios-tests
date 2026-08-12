@@ -76,7 +76,30 @@ npm run test:sim
 npm run test:sauce
 ```
 
-## Decisões de estudo
+## CI — GitHub Actions + Sauce Labs (M30)
+
+A partir do M30, a suíte roda automaticamente em **Continuous Integration** via **GitHub Actions** usando a **Sauce Labs** como Device Farm.
+
+### Como funciona
+- **Trigger**: push na branch `ci` (ou disparo manual `workflow_dispatch`).
+- **Runner**: `ubuntu-latest` com Node 20.
+- **Credenciais**: `SAUCE_USERNAME` e `SAUCE_ACCESS_KEY` vêm dos **Secrets** do GitHub (Settings → Secrets and variables → Actions).
+- **Workflow**: `.github/workflows/ci.yml` — instala deps com `npm ci`, roda `npm run test:sauce`.
+- **Resultado**: no dashboard do Sauce Labs (link no job do Actions) tem vídeo, logs e screenshots.
+
+### Configurando os Secrets
+1. No repo GitHub: **Settings** → **Secrets and variables** → **Actions** → **New repository secret**.
+2. Adicione dois secrets:
+   - `SAUCE_USERNAME` — seu usuário do Sauce Labs
+   - `SAUCE_ACCESS_KEY` — sua Access Key (User Settings → Access Key)
+3. Pronto: qualquer push na branch `ci` dispara o pipeline.
+
+### Rodando manualmente
+No GitHub: aba **Actions** → **CI - Testes iOS no Sauce Labs** → **Run workflow** → escolher branch `ci` → **Run workflow**.
+
+### Onde ver a execução (vídeo)
+- No GitHub Actions: clique no run → job `sauce-tests` → link **Sauce Labs** (ou procure no dashboard `https://app.saucelabs.com` → Automated → Test Results).
+- Lá tem o vídeo completo da sessão, logs Appium, screenshots de cada passo.
 
 - **Page Object Model**: cada tela vira uma classe, isolando os seletores do teste. Assim, se o app mudar de identificador, só mexemos numa página.
 - **Seletores iOS**: priorizei `accessibility id` (mais estável e multiplataforma), com `predicate` e `class chain` como fallback onde necessário.
@@ -85,4 +108,6 @@ npm run test:sauce
 
 ## Entrega
 
-Repositório público, branch `main`. Link do repo submeto como resposta do exercício.
+**M29**: Repositório público, branch `main`. Link do repo submeto como resposta do exercício.
+
+**M30 (CI)**: Mesma base, **branch `ci`** com o workflow GitHub Actions rodando no Sauce Labs. Vídeo da execução na Device Farm submetido junto.

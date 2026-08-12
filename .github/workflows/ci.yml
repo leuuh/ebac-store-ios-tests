@@ -1,0 +1,58 @@
+name: CI - Testes iOS no Sauce Labs
+
+# [M30] Roda os testes mobile na Device Farm (Sauce Labs) a cada push na branch ci.
+# Tambem pode ser disparado manualmente (workflow_dispatch) para re-executar.
+
+on:
+  push:
+    branches:
+      - ci
+  workflow_dispatch:
+
+jobs:
+  sauce-tests:
+    name: Testes iOS no Sauce Labs
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    # [M30] As credenciais do Sauce Labs vêm dos secrets do GitHub Actions.
+    # Configure em: Settings > Secrets and variables > Actions
+    #   SAUCE_USERNAME
+    #   SAUCE_ACCESS_KEY
+    env:
+      SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+      SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+      RUN_ON: sauce
+
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Instalar dependências (npm ci — reprodutível)
+        # [M30] Antes usei npm install; mudei para npm ci que respeita o package-lock.json
+        # e falha se tiver divergência — melhor pra CI.
+        run: npm ci
+
+      # [M30] No Sauce Labs nao precisa instalar o driver XCUITest (a nuvem já tem).
+      # Deixei comentado pra lembrar que em ambiente local (simulador) seria necessário.
+      # - name: Instalar driver XCUITest (Appium)
+      #   run: npx appium driver install xcuitest
+
+      - name: Rodar testes iOS no Sauce Labs
+        run: npm run test:sauce
+
+      - name: Upload de artefatos em caso de falha
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wdio-logs-e-screenshots
+          path: |
+            errorShots/
+            logs/
+          retention-days: 7

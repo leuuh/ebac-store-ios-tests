@@ -6,13 +6,17 @@
 //   - suites.sauce -> Sauce Labs na nuvem (LojaEBAC.ipa)  [roda de qualquer OS]
 //
 // No dia-a-dia escolha o alvo com:  npm run test:sim   ou   npm run test:sauce
+//
+// [M30] Agora carregamos as credenciais do .env com dotenv (local) ou dos
+// secrets do GitHub Actions (CI). Antes eu lia process.env direto e acabei
+// esquecendo de carregar o .env — corrigido: importo dotenv/config no topo.
+import 'dotenv/config';
 import type { Options } from '@wdio/types';
 
-// Junta os ambientes a partir de variáveis opcionais (ver .env.example).
-// Mantemos tudo aqui em texto puro para facilitar o estudo — em projeto real
-// a boa prática é externalizar senhas para o .env (que está no .gitignore).
-const SAUCE_USER = process.env.SAUCE_USERNAME ?? 'seu-usuario-saucelabs';
-const SAUCE_KEY = process.env.SAUCE_ACCESS_KEY ?? 'sua-access-key-saucelabs';
+// [M30] Credenciais do Sauce Labs: o @wdio/sauce-service le direto do
+// ambiente (SAUCE_USERNAME / SAUCE_ACCESS_KEY), seja do .env (local) ou dos
+// secrets do GitHub Actions (CI). Por isso nao preciso de variaveis aqui.
+const RODA_NO_SAUCE = process.env.RUN_ON === 'sauce';
 
 export const config: Options.Testrunner = {
   //
@@ -26,12 +30,12 @@ export const config: Options.Testrunner = {
 
   //
   // ====== Runner ======
-  // Para Sauce Labs apontamos direto para o data center deles. Para o
-  // simulador, deixamos vazio e usamos o @wdio/appium-service local.
-  hostname: process.env.RUN_ON === 'sauce' ? 'ondemand.us-west-1.saucelabs.com' : '127.0.0.1',
-  port: process.env.RUN_ON === 'sauce' ? 443 : 4723,
-  path: process.env.RUN_ON === 'sauce' ? '/wd/hub' : '/',
-  protocol: process.env.RUN_ON === 'sauce' ? 'https' : 'http',
+  // [M30] No Sauce Labs o @wdio/sauce-service resolve o endpoint sozinho,
+  // entao nao preciso mais setar hostname/port/path/protocol a mao (tirei).
+  // No simulador local o @wdio/appium-service sobe o servidor Appium.
+  hostname: RODA_NO_SAUCE ? undefined : '127.0.0.1',
+  port: RODA_NO_SAUCE ? undefined : 4723,
+  path: RODA_NO_SAUCE ? undefined : '/',
 
   //
   // ====== Cucumber/Mocha ======
@@ -43,10 +47,11 @@ export const config: Options.Testrunner = {
 
   //
   // ====== Services ======
-  // O Appium service sobe/encerra o servidor sozinho quando rodamos local.
-  // Em Sauce Labs não precisamos dele (a nuvem já fornece o Appium).
-  services: process.env.RUN_ON === 'sauce' ? [] : ['appium'],
-  appiumService: process.env.RUN_ON === 'sauce' ? undefined : {
+  // [M30] Sauce: uso o service oficial (@wdio/sauce-service) — ele conecta no
+  // data center do Sauce e ainda marca o resultado do teste no dashboard.
+  // Simulador local: Appium service sobe/encerra o servidor sozinho.
+  services: RODA_NO_SAUCE ? ['sauce'] : ['appium'],
+  appiumService: RODA_NO_SAUCE ? undefined : {
     args: {
       relaxedSecurity: true,
       allowInsecure: ['adb_shell'],
@@ -62,17 +67,17 @@ export const config: Options.Testrunner = {
   // O array abaixo mantém UM servidor conhecido só (sauce OU sim), nunca os
   // dois ao mesmo tempo, para não confundir o WebdriverIO. A escolha vem do
   // flag RUN_ON que setamos via npm script (ver package.json -> "test:sauce"/"test:sim").
-  capabilities: process.env.RUN_ON === 'sauce' ? [
+  capabilities: RODA_NO_SAUCE ? [
     {
       // ---- Sauce Labs (nuvem) — usa o .ipa em device/emulador real da nuvem.
+      // [M30] username/accessKey sairam daqui: o @wdio/sauce-service injeta
+      // sozinho a partir de SAUCE_USERNAME/SAUCE_ACCESS_KEY do ambiente.
       platformName: 'iOS',
       'appium:automationName': 'XCUITest',
       'sauce:options': {
-        username: SAUCE_USER,
-        accessKey: SAUCE_KEY,
         app: 'storage:filename=LojaEBAC.ipa',
         appName: 'LojaEBAC.ipa',
-        build: 'LojaEBAC-iOS-M29',
+        build: 'LojaEBAC-iOS-M30-CI',
         name: 'Fluxo de checkout completo',
       },
       'appium:deviceName': 'iPhone.*',

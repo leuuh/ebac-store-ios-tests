@@ -1,7 +1,7 @@
 {
   "name": "ebac-store-ios-tests",
   "version": "1.0.0",
-  "description": "Suíte de testes iOS (WebdriverIO + Appium) do app LojaEBAC — Exercício Módulo 29 / EBAC QE",
+  "description": "Suíte de testes iOS (WebdriverIO + Appium) do app LojaEBAC — M29 + CI no GitHub Actions/Sauce Labs (M30) / EBAC QE",
   "type": "module",
   "scripts": {
     "test": "wdio run wdio.conf.ts --suite sauce",
@@ -9,7 +9,7 @@
     "test:sim": "cross-env RUN_ON=sim wdio run wdio.conf.ts --suite sim",
     "lint": "tsc --noEmit"
   },
-  "keywords": ["appium", "webdriverio", "ios", "ebac", "qa", "m29"],
+  "keywords": ["appium", "webdriverio", "ios", "ebac", "qa", "m29", "m30", "ci", "github-actions", "sauce-labs"],
   "author": "Leonardo de Almeida",
   "license": "MIT",
   "devDependencies": {
@@ -19,9 +19,11 @@
     "@wdio/spec-reporter": "^8.36.1",
     "@wdio/types": "^8.36.1",
     "@wdio/appium-service": "^8.36.1",
+    "@wdio/sauce-service": "^8.36.1",
     "appium": "^2.5.1",
     "appium-xcuitest-driver": "^5.12.0",
     "cross-env": "^7.0.3",
+    "dotenv": "^16.4.5",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5",
     "webdriverio": "^8.36.1"
