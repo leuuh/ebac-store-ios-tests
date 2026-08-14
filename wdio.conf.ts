@@ -50,13 +50,10 @@ export const config: Options.Testrunner = {
   // [M30] Sauce: uso o service oficial (@wdio/sauce-service) — ele conecta no
   // data center do Sauce e ainda marca o resultado do teste no dashboard.
   // Simulador local: Appium service sobe/encerra o servidor sozinho.
-  services: RODA_NO_SAUCE ? ['sauce'] : ['appium'],
-  appiumService: RODA_NO_SAUCE ? undefined : {
-    args: {
-      relaxedSecurity: true,
-      allowInsecure: ['adb_shell'],
-    },
-  },
+  // Os args do Appium vão como [nome, { args }] dentro do array services.
+  services: RODA_NO_SAUCE
+    ? ['sauce']
+    : [['appium', { args: { relaxedSecurity: true, allowInsecure: ['adb_shell'] } }]],
 
   //
   // ====== Reporter ======
@@ -74,9 +71,11 @@ export const config: Options.Testrunner = {
       // sozinho a partir de SAUCE_USERNAME/SAUCE_ACCESS_KEY do ambiente.
       platformName: 'iOS',
       'appium:automationName': 'XCUITest',
+      // [M30] App Storage do Sauce: o caminho do app fica em 'appium:app' no
+      // nível top da capability (nao dentro de sauce:options). A referencia
+      // 'storage:filename=...' aponta pro .ipa que subimos no App Management.
+      'appium:app': 'storage:filename=LojaEBAC.ipa',
       'sauce:options': {
-        app: 'storage:filename=LojaEBAC.ipa',
-        appName: 'LojaEBAC.ipa',
         build: 'LojaEBAC-iOS-M30-CI',
         name: 'Fluxo de checkout completo',
       },
