@@ -11,6 +11,7 @@
 // secrets do GitHub Actions (CI). Antes eu lia process.env direto e acabei
 // esquecendo de carregar o .env — corrigido: importo dotenv/config no topo.
 import 'dotenv/config';
+import { browser } from '@wdio/globals';
 import type { Options } from '@wdio/types';
 
 // [M30] Credenciais do Sauce Labs: o @wdio/sauce-service le direto do
