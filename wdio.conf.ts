@@ -92,7 +92,7 @@ export const config: Options.Testrunner = {
       // iOS 16 costuma ter mais devices disponíveis que o 17 no US-West.
       // Se 16 não der, tenta '18' na próxima.
       'appium:deviceName': 'iPhone',
-      'appium:platformVersion': '16',
+      'appium:platformVersion': '18',
       'appium:noReset': true,
       'appium:newCommandTimeout': 180,
     },
