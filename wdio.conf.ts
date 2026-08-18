@@ -38,6 +38,10 @@ export const config: Options.Testrunner = {
   // detectBackend do webdriverio precisa deles aqui pra reconhecer o backend.
   user: process.env.SAUCE_USERNAME,
   key: process.env.SAUCE_ACCESS_KEY,
+  // [M30] Região da conta Sauce Labs (free trial fica presa a uma região).
+  // O service detecta automaticamente a partir das credenciais. Se falhar,
+  // defina SAUCE_REGION no .env / secrets com: 'us-east-1', 'eu-central-1', 'us-west-1'.
+  region: (process.env.SAUCE_REGION as any) || undefined,
   hostname: RODA_NO_SAUCE ? undefined : '127.0.0.1',
   port: RODA_NO_SAUCE ? undefined : 4723,
   path: RODA_NO_SAUCE ? undefined : '/',
