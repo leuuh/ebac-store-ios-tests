@@ -89,10 +89,9 @@ export const config: Options.Testrunner = {
         name: 'Fluxo de checkout completo',
       },
       // [M30] deviceName mais genérico e platformVersion mais comum no Sauce.
-      // iOS 16 costuma ter mais devices disponíveis que o 17 no US-West.
-      // Se 16 não der, tenta '18' na próxima.
+      // iOS 16 costuma ter mais devices disponíveis que o 17/18 no US-West (trial).
       'appium:deviceName': 'iPhone',
-      'appium:platformVersion': '18',
+      'appium:platformVersion': '16',
       'appium:noReset': true,
       'appium:newCommandTimeout': 180,
     },
