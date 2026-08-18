@@ -2,7 +2,6 @@
   "name": "ebac-store-ios-tests",
   "version": "1.0.0",
   "description": "Suíte de testes iOS (WebdriverIO + Appium) do app LojaEBAC — M29 + CI no GitHub Actions/Sauce Labs (M30) / EBAC QE",
-  "type": "module",
   "scripts": {
     "test": "wdio run wdio.conf.ts --suite sauce",
     "test:sauce": "cross-env RUN_ON=sauce wdio run wdio.conf.ts --suite sauce",

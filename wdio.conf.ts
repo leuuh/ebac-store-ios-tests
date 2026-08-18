@@ -33,6 +33,10 @@ export const config: Options.Testrunner = {
   // [M30] No Sauce Labs o @wdio/sauce-service resolve o endpoint sozinho,
   // entao nao preciso mais setar hostname/port/path/protocol a mao (tirei).
   // No simulador local o @wdio/appium-service sobe o servidor Appium.
+  // [M30] user/key no top-level: o service do Sauce le do ambiente, mas o
+  // detectBackend do webdriverio precisa deles aqui pra reconhecer o backend.
+  user: process.env.SAUCE_USERNAME,
+  key: process.env.SAUCE_ACCESS_KEY,
   hostname: RODA_NO_SAUCE ? undefined : '127.0.0.1',
   port: RODA_NO_SAUCE ? undefined : 4723,
   path: RODA_NO_SAUCE ? undefined : '/',
