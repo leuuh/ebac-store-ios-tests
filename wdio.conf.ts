@@ -88,10 +88,13 @@ export const config: Options.Testrunner = {
         build: 'LojaEBAC-iOS-M30-CI',
         name: 'Fluxo de checkout completo',
       },
-      // [M30] deviceName mais genérico e platformVersion mais comum no Sauce.
-      // iOS 16 costuma ter mais devices disponíveis que o 17/18 no US-West (trial).
-      'appium:deviceName': 'iPhone',
-      'appium:platformVersion': '16',
+      // [M30] Trial do Sauce Labs (US-West) tem inventário de iOS muito limitado.
+      // Afrouxei: deviceName como regex 'iPhone.*' (qualquer modelo) e SEM
+      // platformVersion fixa — deixo o Sauce alocar qualquer iPhone disponível.
+      // Antes pedia iPhone + iOS 16/18 exatos e sempre voltava "no matching device".
+      'appium:deviceName': 'iPhone.*',
+      // 'appium:platformVersion' removido de propósito: pede a versão exata e
+      // nenhum device casava. Sem esse campo o Sauce aceita qualquer versão.
       'appium:noReset': true,
       'appium:newCommandTimeout': 180,
     },
