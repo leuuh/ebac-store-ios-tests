@@ -87,6 +87,13 @@ export const config: Options.Testrunner = {
       'sauce:options': {
         build: 'LojaEBAC-iOS-M30-CI',
         name: 'Fluxo de checkout completo',
+        // [M30] ESTA É A LINHA QUE FAZIA O CI QUEBRAR quando faltava.
+        // Sem 'appiumVersion' o Sauce Labs aloca o Appium 1.x por padrão, que
+        // só fala o protocolo antigo (JSONWP). Como o trial aloca iPhones com
+        // iOS 17/18, a nuvem recusava a sessão com HTTP 500:
+        //   "iOS 17 and above must be used with the W3C protocol and Appium 2".
+        // Pedir 'latest' (ou 'stable') é o que liga o Appium 2 + W3C.
+        appiumVersion: 'latest',
       },
       // [M30] Trial do Sauce Labs (US-West) tem inventário de iOS muito limitado.
       // Afrouxei: deviceName como regex 'iPhone.*' (qualquer modelo) e SEM
@@ -97,10 +104,10 @@ export const config: Options.Testrunner = {
       // nenhum device casava. Sem esse campo o Sauce aceita qualquer versão.
       'appium:noReset': true,
       'appium:newCommandTimeout': 180,
-      // [M30] iOS 17+ exige protocolo W3C + Appium 2 (JSONWP foi deprecado).
-      // useNewWDA força o novo WebDriverAgent (WDA) compatível com W3C.
-      // O protocolo W3C já é padrão no Appium 2; não precisa flag explícita.
-      'appium:useNewWDA': true,
+      // [M30] 'appium:useNewWDA' saiu daqui: eu tinha colocado achando que
+      // "forçava o W3C", mas ela não tem esse efeito — quem escolhe o
+      // protocolo é a versão do Appium (ver appiumVersion acima). Além disso,
+      // em device real o WebDriverAgent é gerenciado pelo próprio Sauce.
     },
   ] : [
     {
