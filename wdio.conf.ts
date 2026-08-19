@@ -98,9 +98,9 @@ export const config: Options.Testrunner = {
       'appium:noReset': true,
       'appium:newCommandTimeout': 180,
       // [M30] iOS 17+ exige protocolo W3C + Appium 2 (JSONWP foi deprecado).
-      // Flags explícitas pra forçar W3C no handshake com o Sauce Labs.
+      // useNewWDA força o novo WebDriverAgent (WDA) compatível com W3C.
+      // O protocolo W3C já é padrão no Appium 2; não precisa flag explícita.
       'appium:useNewWDA': true,
-      'appium:w3c': true,
     },
   ] : [
     {
