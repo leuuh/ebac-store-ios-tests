@@ -97,6 +97,10 @@ export const config: Options.Testrunner = {
       // nenhum device casava. Sem esse campo o Sauce aceita qualquer versão.
       'appium:noReset': true,
       'appium:newCommandTimeout': 180,
+      // [M30] iOS 17+ exige protocolo W3C + Appium 2 (JSONWP foi deprecado).
+      // Flags explícitas pra forçar W3C no handshake com o Sauce Labs.
+      'appium:useNewWDA': true,
+      'appium:w3c': true,
     },
   ] : [
     {
