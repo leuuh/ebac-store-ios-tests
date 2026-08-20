@@ -35,6 +35,21 @@ export class BasePage {
     await browser.pause(ms);
   }
 
+  // No iOS o teclado nao fecha sozinho depois de digitar. Isso causa dois
+  // estragos: ele cobre os botoes do rodape (o toque cai na tecla, nao no
+  // botao) e infla a arvore de acessibilidade, fazendo cada findElement do
+  // WebDriverAgent levar dezenas de segundos ate a sessao morrer.
+  // Fechar e best-effort: se nao houver teclado aberto, seguimos em frente.
+  async esconderTeclado() {
+    try {
+      await browser.execute('mobile: hideKeyboard', {
+        keys: ['Done', 'Return', 'Go', 'Search', 'next'],
+      });
+    } catch {
+      /* sem teclado aberto (ou o app nao expoe tecla de dispensa): ignorar */
+    }
+  }
+
   // espera uma condicao booleana ate dar true ou estourar o timeout.
   async waitUntil(fn: () => Promise<boolean>, timeout = 30000) {
     await browser.waitUntil(fn, { timeout, timeoutMsg: 'Condicao nao satisfeita no tempo limite' });

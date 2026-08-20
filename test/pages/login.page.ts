@@ -35,6 +35,9 @@ class LoginPage extends BasePage {
     await this.EsperarPaginaCarregar();
     await this.waitAndType(this.inputEmail, email);
     await this.waitAndType(this.inputPassword, senha);
+    // O teclado aberto cobre o botao "Entrar" no rodape: sem fechar, o toque
+    // era absorvido pela tecla e o app continuava parado no formulario.
+    await this.esconderTeclado();
     await this.waitAndClick(this.btnLogin);
     await this.ConfirmarLogado();
   }
@@ -44,11 +47,13 @@ class LoginPage extends BasePage {
   // exibindo o erro vindo do backend (ex.: "Email is incorrect").
   // Sem esta checagem o teste passava mesmo sem logar, e as specs seguintes
   // quebravam na Home procurando elementos que nunca chegaram a existir.
-  async ConfirmarLogado(timeout = 30000) {
+  // 15s: a API de login responde em menos de 1s (verificado via curl), entao
+  // esperar meio minuto so servia para deixar a sessao apodrecer.
+  async ConfirmarLogado(timeout = 15000) {
     try {
       await browser.waitUntil(
         async () => !(await $(this.btnLogin).isDisplayed()),
-        { timeout, interval: 500 },
+        { timeout, interval: 1000 },
       );
     } catch {
       throw new Error(`Login nao concluiu: ${await this.MensagemDeErro()}`);
@@ -57,13 +62,23 @@ class LoginPage extends BasePage {
 
   // Le o aviso mostrado pelo app para o erro aparecer no relatorio do CI,
   // em vez de um timeout generico que nao diz o motivo.
+  //
+  // Usa UM getPageSource em vez de $$ + getText por elemento: a versao antiga
+  // disparava dezenas de comandos no WebDriverAgent ja degradado e a sessao
+  // morria no meio da coleta, trocando o diagnostico real por "invalid
+  // session id". Aqui e uma chamada so, e o texto vai para o log do CI.
   private async MensagemDeErro() {
-    const alerta = await $$('//XCUIElementTypeStaticText');
-    for (const el of alerta) {
-      const texto = await el.getText().catch(() => '');
-      if (/incorrect|invalid|please enter|unable/i.test(texto)) return texto;
-    }
-    return 'o app permaneceu na tela de Login (motivo nao identificado)';
+    const xml = await browser.getPageSource().catch(() => '');
+    if (!xml) return 'nao foi possivel ler a tela (sessao indisponivel)';
+
+    const textos = [...xml.matchAll(/(?:label|value)="([^"]{2,120})"/g)]
+      .map((m) => m[1])
+      .filter((t, i, arr) => arr.indexOf(t) === i);
+
+    console.log('[login] textos visiveis na tela:', JSON.stringify(textos));
+
+    const aviso = textos.find((t) => /incorrect|invalid|please|unable|error|fail/i.test(t));
+    return aviso ?? `o app permaneceu na tela de Login. Textos: ${textos.join(' | ')}`;
   }
 }
 
