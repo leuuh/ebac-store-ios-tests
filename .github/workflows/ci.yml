@@ -44,10 +44,8 @@ jobs:
       # - name: Instalar driver XCUITest (Appium)
       #   run: npx appium driver install xcuitest
 
-      # [TEMPORARIO] Rodando o probe de performance de seletores em vez da suite.
-      # Volta para "npm run test:sauce" assim que a medicao decidir a estrategia.
       - name: Rodar testes iOS no Sauce Labs
-        run: npm run test:probe
+        run: npm run test:sauce
 
       - name: Upload de artefatos em caso de falha
         if: failure()

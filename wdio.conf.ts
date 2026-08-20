@@ -113,7 +113,15 @@ export const config: Options.Testrunner = {
       'appium:deviceName': 'iPhone.*',
       // 'appium:platformVersion' removido de propósito: pede a versão exata e
       // nenhum device casava. Sem esse campo o Sauce aceita qualquer versão.
-      'appium:noReset': true,
+      // [M30] ERA 'true' E ESSE ERA O BUG DE VERDADE. Com noReset o Sauce
+      // preserva os dados do app entre sessões, então o app abria já logado
+      // direto na Home. O probe provou: a árvore tem só 142 elementos e os
+      // names da tela são 'tab-Home', 'tab-Browse', 'tab-Account', a lista de
+      // produtos... e nenhum 'btnLogin'. Os testes começam esperando a tela de
+      // login, que nunca aparecia — cada busca queimava ~57s até estourar e a
+      // sessão morria em cascata. Com noReset:false o Sauce limpa os dados e o
+      // app volta a abrir no Login.
+      'appium:noReset': false,
       'appium:newCommandTimeout': 180,
       // [M30] Antes de CADA comando o WebDriverAgent espera a tela ficar
       // "idle" (sem animacao). A Home do LojaEBAC anima sem parar, entao cada
@@ -136,7 +144,9 @@ export const config: Options.Testrunner = {
       'appium:deviceName': 'iPhone 15',
       'appium:platformVersion': '17.5',
       'appium:app': process.cwd() + '/app/LojaEBAC-sim.app',
-      'appium:noReset': true,
+      // Mesmo motivo do bloco do Sauce: sessão anterior logada faria o app
+      // abrir na Home e os testes nunca achariam o Login.
+      'appium:noReset': false,
       'appium:newCommandTimeout': 180,
       'appium:autoAcceptAlerts': true,
       'appium:usePrebuiltWDA': false,
