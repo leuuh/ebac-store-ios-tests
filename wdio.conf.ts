@@ -11,9 +11,13 @@
 // secrets do GitHub Actions (CI). Antes eu lia process.env direto e acabei
 // esquecendo de carregar o .env — corrigido: importo dotenv/config no topo.
 import 'dotenv/config';
-import { mkdir } from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
 import { browser } from '@wdio/globals';
 import type { Options } from '@wdio/types';
+
+// Guarda pra capturar a arvore de acessibilidade (getPageSource) uma unica vez
+// por execucao: ler ela e caro e ja basta pra descobrir os identificadores.
+let pageSourceCapturado = false;
 
 // [M30] Credenciais do Sauce Labs: o @wdio/sauce-service le direto do
 // ambiente (SAUCE_USERNAME / SAUCE_ACCESS_KEY), seja do .env (local) ou dos
@@ -144,15 +148,22 @@ export const config: Options.Testrunner = {
   afterTest: async function (_test, _context, result) {
     if (result.passed) return;
 
+
     const stamp = new Date().toISOString().replace(/[:.]/g, '-');
     try {
       // saveScreenshot nao cria a pasta: sem isso falha com ENOENT.
       await mkdir('./errorShots', { recursive: true });
       await browser.saveScreenshot(`./errorShots/falha-${stamp}.png`);
-      // Nada de getPageSource aqui: no Sauce ele pendurou por 60s e a sessao
-      // morreu, derrubando em cascata todos os testes seguintes com
-      // "invalid session id". O diagnostico de identificadores sai do bundle
-      // (main.jsbundle), sem custo de sessao.
+      // getPageSource pendurava 60s e matava a sessao, mas a causa era o
+      // WebDriverAgent esperando a tela ficar "idle"; com waitForIdleTimeout e
+      // animationCoolOffTimeout zerados no before() ele responde rapido.
+      // Ainda assim capturamos SO na primeira falha: e o suficiente pra ler a
+      // arvore real e nao volta a arriscar a sessao a cada teste.
+      if (!pageSourceCapturado) {
+        pageSourceCapturado = true;
+        const xml = await browser.getPageSource();
+        await writeFile(`./errorShots/arvore-${stamp}.xml`, xml, 'utf8');
+      }
     } catch (err) {
       // Sessao morta (invalid session id) nao rende print — apenas registramos,
       // sem engolir o motivo em silencio como antes.

@@ -4,18 +4,22 @@
 //   "Escolha um produto na lista e o selecione"
 //   "Adicione o produto no carrinho"
 //
-// Seletores:
-//   productName    -> nome do produto (usado pra conferir tudo bem)
-//   productDetails -> container de detalhes
-//   addToCart       -> botao "Adicionar ao carrinho"
-//   cart           -> icone de carrinho (pra validar o contador, se houver)
+// Seletores (conferidos no main.jsbundle do .ipa):
+//   productName -> nome do produto (usado pra conferir tudo bem)
+//   addToCart   -> botao "Adicionar ao carrinho"; e o TouchableOpacity em si,
+//                  aparece 1x no app inteiro e SO nesta tela, entao serve de
+//                  marcador de "cheguei nos detalhes".
+//
+// Por que NAO usamos '~productDetails' como container de detalhes: no bundle
+// ele e o TouchableOpacity de cada CARD da lista de busca (o onPress navega
+// pra ProductDetails levando o productId). Ou seja, ele vive na tela ANTERIOR
+// e existe varias vezes — esperar por ele aqui dava falso negativo.
 import BasePage from './base.page';
 
 class ProdutoPage extends BasePage {
   get nomeProduto() { return '~productName'; }
-  get detalhes() { return '~productDetails'; }
+  get detalhes() { return '~addToCart'; }
   get btnAddCarrinho() { return '~addToCart'; }
-  get iconeCarrinho() { return '~cart'; }
 
   async EsperarDetalhes() {
     await this.waitFor(this.detalhes);
