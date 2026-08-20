@@ -102,11 +102,15 @@ export const config: Options.Testrunner = {
         // Pedir 'latest' (ou 'stable') é o que liga o Appium 2 + W3C.
         appiumVersion: 'latest',
       },
-      // [M30] Trial do Sauce Labs (US-West) tem inventário de iOS muito limitado.
-      // Afrouxei: deviceName como regex 'iPhone.*' (qualquer modelo) e SEM
-      // platformVersion fixa — deixo o Sauce alocar qualquer iPhone disponível.
-      // Antes pedia iPhone + iOS 16/18 exatos e sempre voltava "no matching device".
-      'appium:deviceName': 'iPhone.*',
+      // [M30] O preflight (run 32395028538) mostrou por que a regex 'iPhone.*'
+      // nunca ia funcionar aqui: o catálogo lista 117 iPhones públicos, mas a
+      // cota da conta é allowed.rds = 0 — zero device real público. A regex
+      // casava com devices que a conta enxerga e não pode alocar, e o Sauce
+      // respondia "We couldn't find a MATCHING device".
+      // Dos 162 iOS livres, exatamente 1 é do pool do trial: iPhone_13_Pro_free_sjc1.
+      // O campo aceita o ID exato do device, então peço ele nominalmente em vez
+      // de sortear no catálogo inteiro.
+      'appium:deviceName': process.env.SAUCE_DEVICE || 'iPhone_13_Pro_free_sjc1',
       // 'appium:platformVersion' removido de propósito: pede a versão exata e
       // nenhum device casava. Sem esse campo o Sauce aceita qualquer versão.
       // [M30] ERA 'true' E ESSE ERA O BUG DE VERDADE. Com noReset o Sauce
