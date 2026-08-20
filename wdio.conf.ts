@@ -139,11 +139,8 @@ export const config: Options.Testrunner = {
       // cascata. O probe mediu a arvore inteira em 6.7s, ou seja: o snapshot e
       // barato, caro e a repeticao. Cortando o orcamento pra 5s a busca que
       // erra custa ~15s no pior caso e cabe folgado no limite do proxy.
-      // 'useJSONSource' pede a arvore ja serializada, o mesmo caminho rapido
-      // que o getPageSource usa. snapshotMaxDepth fica de fora de proposito:
-      // reduzir a profundidade escondia o btnLogin.
-      'appium:settings[customSnapshotTimeout]': 5,
-      'appium:settings[useJSONSource]': true,
+      // A correcao entra no hook before() (browser.updateSettings), porque
+      // como capability o WDIO nao tipa 'appium:settings[...]'.
       // [M30] 'appium:useNewWDA' saiu daqui: eu tinha colocado achando que
       // "forçava o W3C", mas ela não tem esse efeito — quem escolhe o
       // protocolo é a versão do Appium (ver appiumVersion acima). Além disso,
@@ -171,6 +168,22 @@ export const config: Options.Testrunner = {
   // Capturamos print se um teste falhar — útil pra depurar no começo dos estudos.
   // Vale principalmente no CI, onde nao temos a tela: o workflow publica a pasta
   // errorShots/ como artefato. Por isso a captura roda em qualquer ambiente.
+  // Uma vez por sessao: ajusta o WebDriverAgent antes do primeiro teste.
+  // 'useJSONSource' pede a arvore ja serializada, o mesmo caminho rapido que o
+  // getPageSource usa (o probe mediu a arvore inteira em 6.7s). Vai num
+  // try/catch porque a chamada so existe no XCUITest — no simulador local ou
+  // em outro driver ela falharia e derrubaria a suite inteira antes de comecar.
+  before: async function () {
+    try {
+      await browser.updateSettings({
+        customSnapshotTimeout: 5,
+        useJSONSource: true,
+      });
+    } catch (err) {
+      console.warn(`[settings] nao foi possivel ajustar o WDA: ${(err as Error).message}`);
+    }
+  },
+
   afterTest: async function (_test, _context, result) {
     if (result.passed) return;
 
