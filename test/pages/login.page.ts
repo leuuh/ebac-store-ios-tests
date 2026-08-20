@@ -23,7 +23,10 @@ class LoginPage extends BasePage {
     // Idempotente: se ja estou no Login, nao mexo na navegacao.
     if (await $(this.btnLogin).isDisplayed()) return;
     await this.waitAndClick(this.tabAccount);
-    await this.waitFor(this.btnLogin);
+    // 60s (e nao os 30s padrao): medido no device real do Sauce, a tela de
+    // Login levou ~60s pra montar depois do toque na aba na primeira
+    // navegacao do app. Depois disso o app responde em fracoes de segundo.
+    await this.waitFor(this.btnLogin, 60000);
   }
 
   async logar(email: string, senha: string) {

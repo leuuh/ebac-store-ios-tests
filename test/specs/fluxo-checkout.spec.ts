@@ -23,14 +23,13 @@ describe('LojaEBAC (iOS) — Fluxo de checkout', () => {
     // [M30] Reforco server-side do que as capabilities pedem: no device real
     // o WebDriverAgent estava gastando 25-85s por busca esperando a tela ficar
     // "idle" (a Home anima sem parar) ate a sessao morrer. Aplicar como
-    // settings garante que vale pra sessao inteira. 'useFirstMatch' devolve o
-    // primeiro elemento em vez de varrer a arvore toda, e limitar a
-    // profundidade do snapshot corta o custo em arvore React Native.
+    // settings garante que vale pra sessao inteira.
+    // NAO adicionar 'snapshotMaxDepth' aqui: testei com 30 e o btnLogin
+    // desapareceu da arvore (React Native aninha mais fundo que isso), o que
+    // troca lentidao por elemento invisivel. So os dois timeouts abaixo.
     await browser.updateSettings({
       waitForIdleTimeout: 0,
       animationCoolOffTimeout: 0,
-      useFirstMatch: true,
-      snapshotMaxDepth: 30,
     });
     // Garante que o app esta la e reseta o estado entre runs (noReset=true
     // no config, entao um reset explicito evita lixo de sessoes anteriores).
