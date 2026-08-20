@@ -50,17 +50,13 @@ jobs:
       # concurrency" — nao era bug de codigo, era cota da conta. Como a mensagem
       # vem no meio de 260 linhas de log do wdio, imprimo a concorrencia e a
       # contagem de iPhones livres ANTES de subir a suite.
+      # A 1a versao ja respondeu o essencial: allowed.rds = 0 (nenhum device real
+      # publico) e allowed.mac_vms = 1. Mas a lista de livres tinha nomes com
+      # sufixo '_free' (ex: iPhone_13_Pro_free_sjc1), que e o pool do trial. Esta
+      # versao vai atras disso: quais devices o trial pode pegar de fato, e com
+      # que nome exato pedir na capability.
       - name: Preflight Sauce (concorrência e devices livres)
-        run: |
-          echo "--- concorrência da conta ---"
-          curl -s -u "$SAUCE_USERNAME:$SAUCE_ACCESS_KEY" \
-            "https://api.us-west-1.saucelabs.com/rest/v1.2/users/$SAUCE_USERNAME/concurrency" \
-            | node -e "let d='';process.stdin.on('data',c=>d+=c).on('end',()=>console.log(d))"
-          echo ""
-          echo "--- iPhones disponíveis agora ---"
-          curl -s -u "$SAUCE_USERNAME:$SAUCE_ACCESS_KEY" \
-            "https://api.us-west-1.saucelabs.com/v1/rdc/devices/available" \
-            | node -e "let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{let v;try{v=JSON.parse(d)}catch(e){return console.log('resposta nao-JSON:',d.slice(0,300))};const l=Array.isArray(v)?v:(v.entities||v.devices||[]);const ip=l.filter(x=>/iphone|ipad/i.test(typeof x==='string'?x:(x.name||x.id||'')));console.log('total livres:',l.length,'| iOS livres:',ip.length);console.log(ip.slice(0,15).map(x=>typeof x==='string'?x:(x.name||x.id)).join('\n'))})"
+        run: node ci/preflight-sauce.mjs
 
       - name: Rodar testes iOS no Sauce Labs
         run: npm run test:sauce
