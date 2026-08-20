@@ -6,6 +6,7 @@
 //   email    -> campo de e-mail
 //   password -> campo de senha
 //   btnLogin -> botao "Entrar"
+import { browser } from '@wdio/globals';
 import BasePage from './base.page';
 
 class LoginPage extends BasePage {
@@ -35,6 +36,34 @@ class LoginPage extends BasePage {
     await this.waitAndType(this.inputEmail, email);
     await this.waitAndType(this.inputPassword, senha);
     await this.waitAndClick(this.btnLogin);
+    await this.ConfirmarLogado();
+  }
+
+  // O login bate na API real (public/authUser em lojaebac.ebaconline.art.br).
+  // Se a credencial for recusada o app NAO navega: continua no formulario
+  // exibindo o erro vindo do backend (ex.: "Email is incorrect").
+  // Sem esta checagem o teste passava mesmo sem logar, e as specs seguintes
+  // quebravam na Home procurando elementos que nunca chegaram a existir.
+  async ConfirmarLogado(timeout = 30000) {
+    try {
+      await browser.waitUntil(
+        async () => !(await $(this.btnLogin).isDisplayed()),
+        { timeout, interval: 500 },
+      );
+    } catch {
+      throw new Error(`Login nao concluiu: ${await this.MensagemDeErro()}`);
+    }
+  }
+
+  // Le o aviso mostrado pelo app para o erro aparecer no relatorio do CI,
+  // em vez de um timeout generico que nao diz o motivo.
+  private async MensagemDeErro() {
+    const alerta = await $$('//XCUIElementTypeStaticText');
+    for (const el of alerta) {
+      const texto = await el.getText().catch(() => '');
+      if (/incorrect|invalid|please enter|unable/i.test(texto)) return texto;
+    }
+    return 'o app permaneceu na tela de Login (motivo nao identificado)';
   }
 }
 

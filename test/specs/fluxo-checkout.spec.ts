@@ -18,6 +18,12 @@ import CarrinhoPage from '../pages/carrinho.page';
 import EnderecoPage from '../pages/endereco.page';
 import CheckoutPage from '../pages/checkout.page';
 
+// Conta de teste criada especificamente para esta automacao via
+// POST public/addUser na API do app. Nao e conta de ninguem e so tem
+// acesso ao ambiente de demonstracao do curso.
+const EMAIL = 'qa.leuuh.tests@gmail.com';
+const SENHA = 'Ebac@2026';
+
 describe('LojaEBAC (iOS) — Fluxo de checkout', () => {
   before(async () => {
     // [M30] Reforco server-side do que as capabilities pedem: no device real
@@ -37,11 +43,11 @@ describe('LojaEBAC (iOS) — Fluxo de checkout', () => {
   });
 
   it('faz login no app', async () => {
-    // passo 1
-    await LoginPage.logar('seu-email@ebac.com', 'sua-senha');
-    // confirmacao: o botao de login some/home aparece -> logou.
-    // aqui so aguardamos a transicao; a proxima etapa ja valida a navegacao.
-    await browser.pause(2000);
+    // passo 1. O logar() ja confirma que a tela de Login saiu do ar; se a API
+    // recusar a credencial ele falha aqui, com a mensagem do app, em vez de
+    // deixar as specs seguintes quebrarem na Home.
+    await LoginPage.logar(EMAIL, SENHA);
+    expect(await $(LoginPage.btnLogin).isDisplayed()).toBe(false);
   });
 
   it('acede a area de busca (Browse)', async () => {
