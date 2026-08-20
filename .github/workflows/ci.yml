@@ -45,7 +45,7 @@ jobs:
       #   run: npx appium driver install xcuitest
 
       - name: Rodar testes iOS no Sauce Labs
-        run: npm run test:probe
+        run: npm run test:sauce
 
       # 'always()' e nao 'failure()': o probe engole os erros num try/catch pra
       # conseguir medir tudo numa sessao so, entao o job termina verde mesmo

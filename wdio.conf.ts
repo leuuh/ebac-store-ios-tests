@@ -11,13 +11,9 @@
 // secrets do GitHub Actions (CI). Antes eu lia process.env direto e acabei
 // esquecendo de carregar o .env — corrigido: importo dotenv/config no topo.
 import 'dotenv/config';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir } from 'node:fs/promises';
 import { browser } from '@wdio/globals';
 import type { Options } from '@wdio/types';
-
-// Guarda pra capturar a arvore de acessibilidade (getPageSource) uma unica vez
-// por execucao: ler ela e caro e ja basta pra descobrir os identificadores.
-let pageSourceCapturado = false;
 
 // [M30] Credenciais do Sauce Labs: o @wdio/sauce-service le direto do
 // ambiente (SAUCE_USERNAME / SAUCE_ACCESS_KEY), seja do .env (local) ou dos
@@ -204,16 +200,11 @@ export const config: Options.Testrunner = {
       // saveScreenshot nao cria a pasta: sem isso falha com ENOENT.
       await mkdir('./errorShots', { recursive: true });
       await browser.saveScreenshot(`./errorShots/falha-${stamp}.png`);
-      // getPageSource pendurava 60s e matava a sessao, mas a causa era o
-      // WebDriverAgent esperando a tela ficar "idle"; com waitForIdleTimeout e
-      // animationCoolOffTimeout zerados no before() ele responde rapido.
-      // Ainda assim capturamos SO na primeira falha: e o suficiente pra ler a
-      // arvore real e nao volta a arriscar a sessao a cada teste.
-      if (!pageSourceCapturado) {
-        pageSourceCapturado = true;
-        const xml = await browser.getPageSource();
-        await writeFile(`./errorShots/arvore-${stamp}.xml`, xml, 'utf8');
-      }
+      // [M30] NAO capturar getPageSource aqui. O probe (run 32392869257) mediu:
+      // mesmo com waitForIdleTimeout=0 e animationCoolOffTimeout=0, o
+      // getPageSource estourou 60714 ms e derrubou a sessao ("A session is
+      // either terminated or not started"), fazendo todos os testes seguintes
+      // falharem em cascata. O print sozinho ja mostra a tela do erro.
     } catch (err) {
       // Sessao morta (invalid session id) nao rende print — apenas registramos,
       // sem engolir o motivo em silencio como antes.
