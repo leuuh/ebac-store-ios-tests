@@ -11,6 +11,7 @@
 // secrets do GitHub Actions (CI). Antes eu lia process.env direto e acabei
 // esquecendo de carregar o .env — corrigido: importo dotenv/config no topo.
 import 'dotenv/config';
+import { mkdir, writeFile } from 'node:fs/promises';
 import { browser } from '@wdio/globals';
 import type { Options } from '@wdio/types';
 
@@ -127,10 +128,24 @@ export const config: Options.Testrunner = {
   //
   // ====== Hooks ======
   // Capturamos print se um teste falhar — útil pra depurar no começo dos estudos.
+  // Vale principalmente no CI, onde nao temos a tela: o workflow publica a pasta
+  // errorShots/ como artefato. Por isso a captura roda em qualquer ambiente.
   afterTest: async function (_test, _context, result) {
-    if (!result.passed && process.env.RUN_ON !== 'sauce') {
-      const stamp = new Date().toISOString().replace(/[:.]/g, '-');
-      await browser.saveScreenshot(`./errorShots/falha-${stamp}.png`).catch(() => {});
+    if (result.passed) return;
+
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+    try {
+      // saveScreenshot nao cria a pasta: sem isso falha com ENOENT.
+      await mkdir('./errorShots', { recursive: true });
+      await browser.saveScreenshot(`./errorShots/falha-${stamp}.png`);
+      // O print mostra a tela, mas nao os identificadores. Sem a arvore de
+      // acessibilidade viramos adivinhos: guardo o XML pra conferir o que o
+      // XCUITest realmente expoe (atributo `name`, e nao `testID`).
+      await writeFile(`./errorShots/arvore-${stamp}.xml`, await browser.getPageSource(), 'utf8');
+    } catch (err) {
+      // Sessao morta (invalid session id) nao rende print — apenas registramos,
+      // sem engolir o motivo em silencio como antes.
+      console.warn(`[errorShots] nao foi possivel salvar o print: ${(err as Error).message}`);
     }
   },
 };
