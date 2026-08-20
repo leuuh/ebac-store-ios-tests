@@ -40,6 +40,29 @@ if (concorrencia.dados?.concurrency) {
   const macs = team?.allowed?.mac_vms ?? organization?.allowed?.mac_vms ?? 0;
   console.log(`\n-> device real (rds): ${rds}`);
   console.log(`-> VM Mac/simulador (mac_vms): ${macs}`);
+
+  // Falho aqui de proposito. Sem cota, a suite ainda gasta ~1min para morrer com
+  // "session not created" no meio de 260 linhas de log — o motivo real (cota da
+  // conta, nao bug de codigo) fica ilegivel. Melhor o job parar aqui, dizendo o
+  // que aconteceu e o que destrava.
+  if (rds === 0) {
+    console.error(
+      [
+        '',
+        'PARANDO ANTES DA SUITE: a conta tem 0 device real (allowed.rds = 0).',
+        'Nenhum device publico e alocavel, nem os do pool "_free" — testado no',
+        'run 32396360076, pedindo iPhone_13_Pro_free_sjc1 por ID: mesma recusa.',
+        'Isso nao e bug do codigo nem das capabilities.',
+        '',
+        'Destrava com UMA das duas:',
+        '  1) liberar cota de real device na conta Sauce (org admin / plano);',
+        '  2) fornecer o build de simulador (.app compilado p/ simulador, zipado)',
+        '     e rodar na VM Mac que a conta ja tem (mac_vms = 1). O LojaEBAC.ipa',
+        '     atual NAO serve: .ipa so roda em device fisico.',
+      ].join('\n')
+    );
+    process.exit(1);
+  }
 } else {
   console.log('resposta inesperada:', JSON.stringify(concorrencia).slice(0, 400));
 }

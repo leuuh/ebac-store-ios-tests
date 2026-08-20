@@ -107,10 +107,13 @@ export const config: Options.Testrunner = {
       // cota da conta é allowed.rds = 0 — zero device real público. A regex
       // casava com devices que a conta enxerga e não pode alocar, e o Sauce
       // respondia "We couldn't find a MATCHING device".
-      // Dos 162 iOS livres, exatamente 1 é do pool do trial: iPhone_13_Pro_free_sjc1.
-      // O campo aceita o ID exato do device, então peço ele nominalmente em vez
-      // de sortear no catálogo inteiro.
-      'appium:deviceName': process.env.SAUCE_DEVICE || 'iPhone_13_Pro_free_sjc1',
+      // Testei pedir nominalmente o único iOS do pool do trial livre na hora
+      // (iPhone_13_Pro_free_sjc1, run 32396360076): mesma recusa. Aquele device
+      // também é isPrivate:false, e com rds=0 nenhum device público é alocável.
+      // Conclusão: não existe capability que contorne cota. Volto para a regex,
+      // que é mais robusta se a cota for liberada (pega qualquer iPhone livre),
+      // e deixo SAUCE_DEVICE como escape para fixar um device específico.
+      'appium:deviceName': process.env.SAUCE_DEVICE || 'iPhone.*',
       // 'appium:platformVersion' removido de propósito: pede a versão exata e
       // nenhum device casava. Sem esse campo o Sauce aceita qualquer versão.
       // [M30] ERA 'true' E ESSE ERA O BUG DE VERDADE. Com noReset o Sauce
