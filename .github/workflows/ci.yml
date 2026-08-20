@@ -44,6 +44,24 @@ jobs:
       # - name: Instalar driver XCUITest (Appium)
       #   run: npx appium driver install xcuitest
 
+      # [M30] Preflight barato (~2s) que responde a pergunta que me custou um run
+      # inteiro: "a conta pode alocar device real agora?". O run 32394032972 morreu
+      # em 8s com "We couldn't find a MATCHING device ... You have 0 public device
+      # concurrency" — nao era bug de codigo, era cota da conta. Como a mensagem
+      # vem no meio de 260 linhas de log do wdio, imprimo a concorrencia e a
+      # contagem de iPhones livres ANTES de subir a suite.
+      - name: Preflight Sauce (concorrência e devices livres)
+        run: |
+          echo "--- concorrência da conta ---"
+          curl -s -u "$SAUCE_USERNAME:$SAUCE_ACCESS_KEY" \
+            "https://api.us-west-1.saucelabs.com/rest/v1.2/users/$SAUCE_USERNAME/concurrency" \
+            | node -e "let d='';process.stdin.on('data',c=>d+=c).on('end',()=>console.log(d))"
+          echo ""
+          echo "--- iPhones disponíveis agora ---"
+          curl -s -u "$SAUCE_USERNAME:$SAUCE_ACCESS_KEY" \
+            "https://api.us-west-1.saucelabs.com/v1/rdc/devices/available" \
+            | node -e "let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{let v;try{v=JSON.parse(d)}catch(e){return console.log('resposta nao-JSON:',d.slice(0,300))};const l=Array.isArray(v)?v:(v.entities||v.devices||[]);const ip=l.filter(x=>/iphone|ipad/i.test(typeof x==='string'?x:(x.name||x.id||'')));console.log('total livres:',l.length,'| iOS livres:',ip.length);console.log(ip.slice(0,15).map(x=>typeof x==='string'?x:(x.name||x.id)).join('\n'))})"
+
       - name: Rodar testes iOS no Sauce Labs
         run: npm run test:sauce
 
