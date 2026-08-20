@@ -20,6 +20,18 @@ import CheckoutPage from '../pages/checkout.page';
 
 describe('LojaEBAC (iOS) — Fluxo de checkout', () => {
   before(async () => {
+    // [M30] Reforco server-side do que as capabilities pedem: no device real
+    // o WebDriverAgent estava gastando 25-85s por busca esperando a tela ficar
+    // "idle" (a Home anima sem parar) ate a sessao morrer. Aplicar como
+    // settings garante que vale pra sessao inteira. 'useFirstMatch' devolve o
+    // primeiro elemento em vez de varrer a arvore toda, e limitar a
+    // profundidade do snapshot corta o custo em arvore React Native.
+    await browser.updateSettings({
+      waitForIdleTimeout: 0,
+      animationCoolOffTimeout: 0,
+      useFirstMatch: true,
+      snapshotMaxDepth: 30,
+    });
     // Garante que o app esta la e reseta o estado entre runs (noReset=true
     // no config, entao um reset explicito evita lixo de sessoes anteriores).
     await browser.pause(2500);

@@ -52,7 +52,10 @@ export const config: Options.Testrunner = {
   framework: 'mocha',
   mochaOpts: {
     ui: 'bdd',
-    timeout: 180000, // testes mobile são lentos: 3 min de margem por it.
+    // [M30] Era 180000 e o teste de login estourava: os 3 primeiros comandos
+    // no device real custam ~25-85s cada enquanto o app assenta (depois caem
+    // pra 0,3s). 5 min dao a folga necessaria sem mascarar travamento real.
+    timeout: 300000,
   },
 
   //
