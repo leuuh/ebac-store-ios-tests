@@ -131,6 +131,19 @@ export const config: Options.Testrunner = {
       // padrao para apps React Native — o find olha a arvore como ela esta.
       'appium:waitForIdleTimeout': 0,
       'appium:animationCoolOffTimeout': 0,
+      // [M30] O que ainda matava a sessao: quando o elemento NAO existe, o
+      // WebDriverAgent refaz o snapshot ate 3x, cada tentativa com o
+      // 'customSnapshotTimeout' padrao de 15s ("Retrying 1/3" nos logs). Uma
+      // busca que falha custava 35-75s e o proxy do Sauce corta qualquer
+      // comando que passe de 60s -> "invalid session id" e os 7 testes caem em
+      // cascata. O probe mediu a arvore inteira em 6.7s, ou seja: o snapshot e
+      // barato, caro e a repeticao. Cortando o orcamento pra 5s a busca que
+      // erra custa ~15s no pior caso e cabe folgado no limite do proxy.
+      // 'useJSONSource' pede a arvore ja serializada, o mesmo caminho rapido
+      // que o getPageSource usa. snapshotMaxDepth fica de fora de proposito:
+      // reduzir a profundidade escondia o btnLogin.
+      'appium:settings[customSnapshotTimeout]': 5,
+      'appium:settings[useJSONSource]': true,
       // [M30] 'appium:useNewWDA' saiu daqui: eu tinha colocado achando que
       // "forçava o W3C", mas ela não tem esse efeito — quem escolhe o
       // protocolo é a versão do Appium (ver appiumVersion acima). Além disso,
