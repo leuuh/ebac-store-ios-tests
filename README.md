@@ -101,6 +101,46 @@ No GitHub: aba **Actions** → **CI - Testes iOS no Sauce Labs** → **Run workf
 - No GitHub Actions: clique no run → job `sauce-tests` → link **Sauce Labs** (ou procure no dashboard `https://app.saucelabs.com` → Automated → Test Results).
 - Lá tem o vídeo completo da sessão, logs Appium, screenshots de cada passo.
 
+## Limitação conhecida — cota de Device Farm
+
+> **O pipeline está vermelho e a causa não é o código.** A conta Sauce Labs usada
+> neste exercício não tem cota de device real. Limitação já reconhecida para este
+> projeto.
+
+A API de concorrência do Sauce (`/rest/v1.2/users/{user}/concurrency`) responde:
+
+```json
+"organization": { "allowed": { "rds": 0, "mac_vms": 0, "vms": 0 } },
+"team":         { "allowed": { "rds": 0, "mac_vms": 1, "vms": 0 } }
+```
+
+- `rds: 0` → **nenhum device real alocável** (RDC = Real Device Cloud).
+- `mac_vms: 1` → a conta só tem uma VM Mac (simulador).
+
+O erro que aparece no meio do log do WebdriverIO:
+
+```
+session not created: We couldn't find a MATCHING device in our US-West data center
+Warning: You have 0 public device concurrency so you can only access private devices.
+```
+
+### A pegadinha
+O catálogo do Sauce lista **117 iPhones públicos** e ~162 devices iOS "livres".
+**Visível ≠ alocável.** Pedir um device nominalmente pelo ID do pool free
+(`iPhone_13_Pro_free_sjc1`) produz exatamente a mesma recusa — não existe
+capability que contorne cota zerada.
+
+### Por que não usar o simulador
+O simulador consumiria a cota `mac_vms: 1` que a conta tem, mas exige um `.app`
+compilado para simulador. O app distribuído é `LojaEBAC.ipa`, e **.ipa só roda em
+device físico**.
+
+### O que foi feito a respeito
+`ci/preflight-sauce.mjs` roda **antes** da suíte e consulta a cota. Se `rds === 0`,
+aborta em ~40s com o motivo no topo do log, em vez de gastar ~15 min para morrer
+no meio de 260 linhas de saída do Appium. Quando houver cota, o preflight passa
+sozinho e a suíte executa sem nenhuma alteração de código.
+
 - **Page Object Model**: cada tela vira uma classe, isolando os seletores do teste. Assim, se o app mudar de identificador, só mexemos numa página.
 - **Seletores iOS**: priorizei `accessibility id` (mais estável e multiplataforma), com `predicate` e `class chain` como fallback onde necessário.
 - **`.env`**: credenciais ficam fora do repositório (nunca commitar).
@@ -110,4 +150,8 @@ No GitHub: aba **Actions** → **CI - Testes iOS no Sauce Labs** → **Run workf
 
 **M29**: Repositório público, branch `main`. Link do repo submeto como resposta do exercício.
 
-**M30 (CI)**: Mesma base, **branch `ci`** com o workflow GitHub Actions rodando no Sauce Labs. Vídeo da execução na Device Farm submetido junto.
+**M30 (CI)**: Mesma base, **branch `ci`** com o workflow GitHub Actions rodando no Sauce Labs.
+
+O pipeline está configurado, dispara corretamente a cada push e autentica na Sauce
+Labs. A execução na Device Farm não pôde ser gravada por ausência de cota de device
+real na conta — ver [Limitação conhecida](#limitação-conhecida--cota-de-device-farm).
