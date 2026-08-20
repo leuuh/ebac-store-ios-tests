@@ -13,8 +13,16 @@ class LoginPage extends BasePage {
   get inputEmail() { return '~email'; }
   get inputPassword() { return '~password'; }
   get btnLogin() { return '~btnLogin'; }
+  // O app abre na Home, nao no Login. A tela de Login mora na 4a aba, cuja
+  // rota se chama "Account" (o rotulo exibido e "Profile"). O navigator dessa
+  // aba declara initialRouteName "StartScreen", que nao existe entre as suas
+  // telas — entao o React Navigation cai na primeira da lista, o Login.
+  get tabAccount() { return '~tab-Account'; }
 
   async EsperarPaginaCarregar() {
+    // Idempotente: se ja estou no Login, nao mexo na navegacao.
+    if (await $(this.btnLogin).isDisplayed()) return;
+    await this.waitAndClick(this.tabAccount);
     await this.waitFor(this.btnLogin);
   }
 

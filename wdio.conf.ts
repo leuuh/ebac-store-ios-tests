@@ -11,7 +11,7 @@
 // secrets do GitHub Actions (CI). Antes eu lia process.env direto e acabei
 // esquecendo de carregar o .env — corrigido: importo dotenv/config no topo.
 import 'dotenv/config';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir } from 'node:fs/promises';
 import { browser } from '@wdio/globals';
 import type { Options } from '@wdio/types';
 
@@ -138,10 +138,10 @@ export const config: Options.Testrunner = {
       // saveScreenshot nao cria a pasta: sem isso falha com ENOENT.
       await mkdir('./errorShots', { recursive: true });
       await browser.saveScreenshot(`./errorShots/falha-${stamp}.png`);
-      // O print mostra a tela, mas nao os identificadores. Sem a arvore de
-      // acessibilidade viramos adivinhos: guardo o XML pra conferir o que o
-      // XCUITest realmente expoe (atributo `name`, e nao `testID`).
-      await writeFile(`./errorShots/arvore-${stamp}.xml`, await browser.getPageSource(), 'utf8');
+      // Nada de getPageSource aqui: no Sauce ele pendurou por 60s e a sessao
+      // morreu, derrubando em cascata todos os testes seguintes com
+      // "invalid session id". O diagnostico de identificadores sai do bundle
+      // (main.jsbundle), sem custo de sessao.
     } catch (err) {
       // Sessao morta (invalid session id) nao rende print — apenas registramos,
       // sem engolir o motivo em silencio como antes.

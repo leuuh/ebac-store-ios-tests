@@ -13,7 +13,9 @@ class BrowsePage extends BasePage {
   get campoBusca() { return '~searchInput'; }
   get listaProdutos() { return '~search-products'; }
   // um item generico da lista de produtos (primeiro elemento).
-  get primeiroProduto() { return '//*[@testID="search-products"]/*[1]'; }
+  // Atencao: no XCUITest a arvore NAO tem atributo `testID` — o testID do
+  // React Native chega no iOS como `name`. XPath com @testID nunca casa.
+  get primeiroProduto() { return this.itemDaLista(1); }
 
   async AbrirBusca() {
     await this.waitAndClick(this.iconeBusca);
@@ -28,7 +30,7 @@ class BrowsePage extends BasePage {
 
   // retorna o seletor XPath do item N da lista de busca (1-based).
   itemDaLista(indice: number) {
-    return `//*[@testID="search-products"]/*[${indice}]`;
+    return `//*[@name="search-products"]/*[${indice}]`;
   }
 }
 
