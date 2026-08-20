@@ -29,9 +29,12 @@ export const config: Options.Testrunner = {
   // ====== Suites ======
   // Dois conjuntos de specs: um por ambiente. Assim a mesma suíte de testes
   // roda em qualquer alvo sem mudar o código do teste.
+  // O probe e um spec de diagnostico de performance, nao um teste de negocio:
+  // fica fora de sim/sauce e so roda quando eu peco explicitamente (test:probe).
   suites: {
-    sim: ['./test/specs/**/*.spec.ts'],
-    sauce: ['./test/specs/**/*.spec.ts'],
+    sim: ['./test/specs/fluxo-checkout.spec.ts'],
+    sauce: ['./test/specs/fluxo-checkout.spec.ts'],
+    probe: ['./test/specs/probe-seletores.spec.ts'],
   },
 
   //

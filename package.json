@@ -6,9 +6,21 @@
     "test": "wdio run wdio.conf.ts --suite sauce",
     "test:sauce": "cross-env RUN_ON=sauce wdio run wdio.conf.ts --suite sauce",
     "test:sim": "cross-env RUN_ON=sim wdio run wdio.conf.ts --suite sim",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "test:probe": "cross-env RUN_ON=sauce wdio run wdio.conf.ts --suite probe"
   },
-  "keywords": ["appium", "webdriverio", "ios", "ebac", "qa", "m29", "m30", "ci", "github-actions", "sauce-labs"],
+  "keywords": [
+    "appium",
+    "webdriverio",
+    "ios",
+    "ebac",
+    "qa",
+    "m29",
+    "m30",
+    "ci",
+    "github-actions",
+    "sauce-labs"
+  ],
   "author": "Leonardo de Almeida",
   "license": "MIT",
   "devDependencies": {
