@@ -105,6 +105,14 @@ export const config: Options.Testrunner = {
       // nenhum device casava. Sem esse campo o Sauce aceita qualquer versão.
       'appium:noReset': true,
       'appium:newCommandTimeout': 180,
+      // [M30] Antes de CADA comando o WebDriverAgent espera a tela ficar
+      // "idle" (sem animacao). A Home do LojaEBAC anima sem parar, entao cada
+      // findElement gastava ~30s nessa espera e o terceiro passou de 60s: o
+      // proxy do Sauce cortou e a sessao morreu ("invalid session id"), o que
+      // reprovava os 7 testes em cascata. Zerar as duas esperas e a correcao
+      // padrao para apps React Native — o find olha a arvore como ela esta.
+      'appium:waitForIdleTimeout': 0,
+      'appium:animationCoolOffTimeout': 0,
       // [M30] 'appium:useNewWDA' saiu daqui: eu tinha colocado achando que
       // "forçava o W3C", mas ela não tem esse efeito — quem escolhe o
       // protocolo é a versão do Appium (ver appiumVersion acima). Além disso,
