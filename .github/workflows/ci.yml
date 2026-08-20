@@ -45,7 +45,7 @@ jobs:
       #   run: npx appium driver install xcuitest
 
       - name: Rodar testes iOS no Sauce Labs
-        run: npm run test:sauce
+        run: npm run test:probe
 
       - name: Upload de artefatos em caso de falha
         if: failure()

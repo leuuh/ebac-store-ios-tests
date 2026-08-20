@@ -21,6 +21,11 @@ import { browser } from '@wdio/globals';
 
 describe('[probe] arvore de acessibilidade no device real', () => {
   it('captura o pageSource antes de qualquer busca', async () => {
+    // [rodada 3] Agora com noReset:false. As duas rodadas anteriores tiraram o
+    // snapshot no primeiro instante da sessao; com o app sendo reinstalado ele
+    // pode ainda estar no splash, o que explicaria buscas caras que nao acham
+    // NEM btnLogin NEM tab-Account. Espero o app montar antes de olhar.
+    await browser.pause(20000);
     // Sem nenhum findElement antes: quero o custo limpo de um unico snapshot.
     const inicio = Date.now();
     let fonte = '';
@@ -60,11 +65,19 @@ describe('[probe] arvore de acessibilidade no device real', () => {
     console.log('[probe] ---- fim do trecho ----');
   });
 
-  it('mede uma unica busca depois do snapshot', async () => {
-    // Uma so, para confirmar que o custo se repete a cada busca (ou seja, que
-    // nao existe cache de snapshot entre comandos).
-    const inicio = Date.now();
-    const existe = await $('~btnLogin').isExisting();
-    console.log(`[probe] busca pos-snapshot | ${Date.now() - inicio} ms | existe=${existe}`);
+  it('mede uma busca que ACHA e uma que NAO acha', async () => {
+    // A suite morre sempre na 3a busca, ao procurar tab-Account — que o probe
+    // anterior provou existir. Preciso saber se buscar algo que EXISTE tambem
+    // custa 30s+: se sim, o problema e a varredura e nao o "nao achou", e a
+    // unica saida e parar de usar findElement pra decidir em que tela estou.
+    for (const alvo of ['~tab-Account', '~btnLogin']) {
+      const inicio = Date.now();
+      try {
+        const existe = await $(alvo).isExisting();
+        console.log(`[probe] busca ${alvo} | ${Date.now() - inicio} ms | existe=${existe}`);
+      } catch (err) {
+        console.log(`[probe] busca ${alvo} | ${Date.now() - inicio} ms | ERRO ${(err as Error).message.slice(0, 90)}`);
+      }
+    }
   });
 });
