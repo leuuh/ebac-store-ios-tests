@@ -47,8 +47,13 @@ jobs:
       - name: Rodar testes iOS no Sauce Labs
         run: npm run test:probe
 
-      - name: Upload de artefatos em caso de falha
-        if: failure()
+      # 'always()' e nao 'failure()': o probe engole os erros num try/catch pra
+      # conseguir medir tudo numa sessao so, entao o job termina verde mesmo
+      # quando o diagnostico falhou — e o print, que e justamente a prova do
+      # que esta na tela, nunca subia. Artefato de diagnostico tem que subir
+      # sempre, senao eu fico cego exatamente quando mais preciso ver.
+      - name: Upload de artefatos (sempre)
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: wdio-logs-e-screenshots

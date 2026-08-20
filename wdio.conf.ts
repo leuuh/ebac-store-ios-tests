@@ -131,6 +131,12 @@ export const config: Options.Testrunner = {
       // padrao para apps React Native — o find olha a arvore como ela esta.
       'appium:waitForIdleTimeout': 0,
       'appium:animationCoolOffTimeout': 0,
+      // [M30] Estava so no bloco do simulador local — assimetria minha. Com
+      // noReset:false o app e reinstalado e sobe com o alerta de permissao do
+      // iOS pendente; alerta pendente e causa classica de snapshot travado, que
+      // e exatamente o sintoma (getPageSource pendura 60s e o proxy do Sauce
+      // corta a sessao). Aceitar o alerta sozinho remove a variavel.
+      'appium:autoAcceptAlerts': true,
       // [M30] O que ainda matava a sessao: quando o elemento NAO existe, o
       // WebDriverAgent refaz o snapshot ate 3x, cada tentativa com o
       // 'customSnapshotTimeout' padrao de 15s ("Retrying 1/3" nos logs). Uma
