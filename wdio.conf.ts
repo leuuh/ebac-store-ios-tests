@@ -177,7 +177,12 @@ export const config: Options.Testrunner = {
     try {
       await browser.updateSettings({
         customSnapshotTimeout: 5,
-        useJSONSource: true,
+        // [M30] 'useJSONSource' SAIU. Ele era a unica diferenca entre o probe
+        // que leu a arvore inteira em 6.7s e o que pendurou o getPageSource
+        // por 60s ate o Sauce matar a sessao ("A session is either terminated
+        // or not started"). Em vez de acelerar, ele troca o mecanismo de
+        // serializacao do WebDriverAgent e trava. Fica de fora ate eu ter
+        // medida que prove ganho.
       });
     } catch (err) {
       console.warn(`[settings] nao foi possivel ajustar o WDA: ${(err as Error).message}`);
